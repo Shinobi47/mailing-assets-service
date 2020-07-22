@@ -1,0 +1,1 @@
+# mailing-assets-service
