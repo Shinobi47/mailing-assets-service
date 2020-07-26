@@ -19,7 +19,7 @@ public class DataMapper {
 				.prospectEmail(entity.getProspectEmail())
 				.group(toDto(entity.getGroup())).build();
 	}
-	
+
 	public GroupDto toDto(GroupEntity entity) {
 		return GroupDto.builder()
 				.id(entity.getId())

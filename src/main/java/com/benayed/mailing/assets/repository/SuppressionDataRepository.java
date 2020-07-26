@@ -28,19 +28,17 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class SuppressionDataRepository {
 	
-	private static final String ZIP_FILE_SUFFIX = "tmp";
-	private static final String ZIP_FILE_PREFIX = "HiPathSuppData";
-	private final String HIPATH_DOMAINS_SUPPRESSION_FILE_NAME = "domains.txt";
-	private final String HIPATH_DATA_SUPPRESSION_FILE_NAME = "0.txt";
+	private final String ZIP_FILE_SUFFIX = "tmp";
+	private final String ZIP_FILE_PREFIX = "HiPathSuppData";
+	public static final String HIPATH_DOMAINS_SUPPRESSION_FILE_NAME = "domains.txt";
+	public static final String HIPATH_DATA_SUPPRESSION_FILE_NAME = "0.txt";
 	private RestTemplate restTemplate;
 
-	public HiPathSuppressionFilesLocationDto fetchHiPathSuppressionData(String zipFileUrl) throws IOException {
+	public HiPathSuppressionFilesLocationDto fetchHiPathSuppressionData(String zipFileUrl, Path unzipLocation) throws IOException {
 		Assert.notNull(zipFileUrl, "Cannot fetch zip suppressionFile with null url");
 		File suppZipFile = restTemplate.execute(zipFileUrl, HttpMethod.GET, null, this::writeResponseToTempFile);
-		
-		Path unzipDestination = Files.createTempDirectory(suppZipFile.getName());
-		
-		List<Path> paths = unzip(suppZipFile.getCanonicalFile().toPath(), unzipDestination);
+				
+		List<Path> paths = unzip(suppZipFile.getCanonicalFile().toPath(), unzipLocation);
         return HiPathSuppressionFilesLocationDto.builder()
         		.domainsPath(getFilePath(HIPATH_DOMAINS_SUPPRESSION_FILE_NAME, paths))
         		.dataPath(getFilePath(HIPATH_DATA_SUPPRESSION_FILE_NAME, paths)).build();

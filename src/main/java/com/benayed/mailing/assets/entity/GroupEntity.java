@@ -44,5 +44,9 @@ public class GroupEntity {
 	@ToString.Exclude
 	@OneToMany(mappedBy = "group")
 	private List<DataItemEntity> dataItems;
+	
+	@ToString.Exclude
+	@OneToMany(mappedBy = "group")
+    private List<SuppressionFilteredGroupInfoEntity> filteredDataInfo;
 
 }
