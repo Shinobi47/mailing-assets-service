@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor @NoArgsConstructor @Builder
 @Entity
 @Table(name = "SUPPRESSION_FILTERED_GROUP")
-public class SuppressionFilteredGroupInfoEntity {
+public class FilteredGroupInfoEntity {
 
 	@EmbeddedId
-	private SuppressionFilteredGroupInfoKey id;
+	private FilteredGroupInfoKey id;
 	
 	@ManyToOne
 	@MapsId("SFG_GROUP_ID")

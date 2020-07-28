@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 @Embeddable
-public class SuppressionFilteredGroupInfoKey implements Serializable{
+public class FilteredGroupInfoKey implements Serializable{
 
 	/**
 	 * 

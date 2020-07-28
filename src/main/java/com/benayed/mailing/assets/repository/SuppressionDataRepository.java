@@ -36,10 +36,13 @@ public class SuppressionDataRepository {
 
 	public HiPathSuppressionFilesLocationDto fetchHiPathSuppressionData(String zipFileUrl, Path unzipLocation) throws IOException {
 		Assert.notNull(zipFileUrl, "Cannot fetch zip suppressionFile with null url");
+		Assert.notNull(unzipLocation, "unzipLocation cannot be null");
+		
 		File suppZipFile = restTemplate.execute(zipFileUrl, HttpMethod.GET, null, this::writeResponseToTempFile);
-				
+
 		List<Path> paths = unzip(suppZipFile.getCanonicalFile().toPath(), unzipLocation);
-        return HiPathSuppressionFilesLocationDto.builder()
+
+		return HiPathSuppressionFilesLocationDto.builder()
         		.domainsPath(getFilePath(HIPATH_DOMAINS_SUPPRESSION_FILE_NAME, paths))
         		.dataPath(getFilePath(HIPATH_DATA_SUPPRESSION_FILE_NAME, paths)).build();
 	}
@@ -58,9 +61,10 @@ public class SuppressionDataRepository {
                 } else {
                     Files.createDirectory(toPath);
                 }
-                
+                 
                 entriesPaths.add(toPath);
             }
+            Files.delete(zipFile);
             return entriesPaths;
         } catch (IOException e) {
         	throw e;
@@ -72,8 +76,11 @@ public class SuppressionDataRepository {
 	}
 
 	private File writeResponseToTempFile(ClientHttpResponse clientHttpResponse) throws IOException, FileNotFoundException {
+		
 		File file = File.createTempFile(ZIP_FILE_PREFIX, ZIP_FILE_SUFFIX);
-		StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(file));
+		FileOutputStream fos = new FileOutputStream(file);
+		StreamUtils.copy(clientHttpResponse.getBody(), fos);
+		fos.close();
 		return file;
 	}
 
