@@ -71,7 +71,7 @@ public class AssetsController {
 		
 	@GetMapping(path = "test4")
 	public ResponseEntity<?> tssssst(){
-		mailingDataService.deleteSuppressionInformations(1L);
+		mailingDataService.deleteSuppressionInformations(1L);	
 		return null;
 	}
 

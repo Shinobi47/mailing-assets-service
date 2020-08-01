@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data @Builder
-public class HiPathSuppressionFilesLocationDto {
+public class SuppressionFilesLocationDto {
 	private Path domainsPath;
 	private Path dataPath;
 }

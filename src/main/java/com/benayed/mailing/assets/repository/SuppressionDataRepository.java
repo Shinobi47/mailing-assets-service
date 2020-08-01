@@ -19,8 +19,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.RestTemplate;
 
-import com.benayed.mailing.assets.dto.HiPathSuppressionFilesLocationDto;
-import com.benayed.mailing.assets.exception.TechnicalException;
+import com.benayed.mailing.assets.dto.SuppressionFilesLocationDto;
 
 import lombok.AllArgsConstructor;
 
@@ -31,10 +30,9 @@ public class SuppressionDataRepository {
 	private final String ZIP_FILE_SUFFIX = "tmp";
 	private final String ZIP_FILE_PREFIX = "HiPathSuppData";
 	public static final String HIPATH_DOMAINS_SUPPRESSION_FILE_NAME = "domains.txt";
-	public static final String HIPATH_DATA_SUPPRESSION_FILE_NAME = "0.txt";
 	private RestTemplate restTemplate;
 
-	public HiPathSuppressionFilesLocationDto fetchHiPathSuppressionData(String zipFileUrl, Path unzipLocation) throws IOException {
+	public SuppressionFilesLocationDto fetchHiPathSuppressionData(String zipFileUrl, Path unzipLocation) throws IOException {
 		Assert.notNull(zipFileUrl, "Cannot fetch zip suppressionFile with null url");
 		Assert.notNull(unzipLocation, "unzipLocation cannot be null");
 		
@@ -42,11 +40,35 @@ public class SuppressionDataRepository {
 
 		List<Path> paths = unzip(suppZipFile.getCanonicalFile().toPath(), unzipLocation);
 
-		return HiPathSuppressionFilesLocationDto.builder()
-        		.domainsPath(getFilePath(HIPATH_DOMAINS_SUPPRESSION_FILE_NAME, paths))
-        		.dataPath(getFilePath(HIPATH_DATA_SUPPRESSION_FILE_NAME, paths)).build();
+		return SuppressionFilesLocationDto.builder()
+        		.domainsPath(getDomainsSuppressionFilePath(paths))
+        		.dataPath(getDataSuppressionFile(paths)).build();
+	}
+
+	private Path getDataSuppressionFile(List<Path> paths) {
+		return paths
+				.stream()
+				.filter(this::isFileHavingHiPathSuppressionDataFileNamePattern)
+				.findFirst()
+				.orElse(null);
+	}
+
+
+	private Path getDomainsSuppressionFilePath(List<Path> paths) {
+		return paths
+				.stream()
+				.filter(this::isFileHavingHiPathSuppressionDomainsFileNamePattern)
+				.findFirst()
+				.orElse(null);
 	}
 	
+	public boolean isFileHavingHiPathSuppressionDataFileNamePattern(Path path) {
+		return Character.isDigit(path.getFileName().toString().charAt(0)); //cuz hipath data suppression file start with a digit
+	}
+	
+	public boolean isFileHavingHiPathSuppressionDomainsFileNamePattern(Path path) {
+		return HIPATH_DOMAINS_SUPPRESSION_FILE_NAME.equalsIgnoreCase(path.getFileName().toString());
+	}	
 	
 
 	private List<Path> unzip(Path zipFile, Path unzipDestination) throws IOException {
@@ -69,10 +91,6 @@ public class SuppressionDataRepository {
         } catch (IOException e) {
         	throw e;
         }
-	}
-
-	private Path getFilePath(String fileName, List<Path> paths) {
-		return paths.stream().filter( path -> fileName.equals(path.getFileName().toString())).findFirst().orElseThrow(() -> new TechnicalException("Suppression file \"" + fileName + "\" not found"));
 	}
 
 	private File writeResponseToTempFile(ClientHttpResponse clientHttpResponse) throws IOException, FileNotFoundException {

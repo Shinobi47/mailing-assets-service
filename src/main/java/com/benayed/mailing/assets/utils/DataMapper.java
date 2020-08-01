@@ -33,4 +33,27 @@ public class DataMapper {
 				.id(entity.getId())
 				.name(entity.getName()).build();
 	}
+	
+	
+	public DataItemEntity toEntity(DataItemDto dto) {
+		return DataItemEntity.builder()
+				.id(dto.getId())
+				.isp(dto.getIsp())
+				.prospectEmail(dto.getProspectEmail())
+				.group(toEntity(dto.getGroup())).build();
+	}
+
+	public GroupEntity toEntity(GroupDto dto) {
+		return GroupEntity.builder()
+				.id(dto.getId())
+				.name(dto.getName())
+				.creationDate(dto.getCreationDate())
+				.asset(toEntity(dto.getAsset())).build();
+	}
+	
+	public AssetEntity toEntity(AssetDto dto) {
+		return AssetEntity.builder()
+				.id(dto.getId())
+				.name(dto.getName()).build();
+	}
 }

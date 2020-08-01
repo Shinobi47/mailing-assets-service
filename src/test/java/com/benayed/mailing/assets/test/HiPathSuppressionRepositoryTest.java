@@ -1,5 +1,6 @@
 package com.benayed.mailing.assets.test;
 
+import static com.benayed.mailing.assets.repository.SuppressionDataRepository.HIPATH_DOMAINS_SUPPRESSION_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,10 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
-import com.benayed.mailing.assets.dto.HiPathSuppressionFilesLocationDto;
+import com.benayed.mailing.assets.dto.SuppressionFilesLocationDto;
 import com.benayed.mailing.assets.repository.SuppressionDataRepository;
-import static com.benayed.mailing.assets.repository.SuppressionDataRepository.HIPATH_DATA_SUPPRESSION_FILE_NAME;
-import static com.benayed.mailing.assets.repository.SuppressionDataRepository.HIPATH_DOMAINS_SUPPRESSION_FILE_NAME;
 
 @ExtendWith(MockitoExtension.class)
 public class HiPathSuppressionRepositoryTest {
@@ -67,25 +66,27 @@ public class HiPathSuppressionRepositoryTest {
 	}
 	
 	@Test
-	public void should_unzip_HiPath_suppression_zip_and_delete_it_successfully_when_calling_HiPath_api() throws IOException {
+	public void should_unzip_HiPath_suppression_zip_file_and_delete_it_successfully_when_calling_HiPath_api() throws IOException {
 		//Arrange
 		String zipFileUrl = "someUrl";
-		Path zipTestFile = Paths.get("src", "test", "resources", "HiPath_Supp_Data_Test.zip");
+		Path zipTestFile = Paths.get("src", "test", "resources", "HiPath_Supp_file_with_domains_and_data.zip");
 		Path unzipLocation = Paths.get("src", "test", "resources", "toBeDeleted");
 		Path temporaryZipFile = copyZipTestFileIntoTemporaryLocation(unzipLocation, zipTestFile); //because our service deletes it when unzipped
 		
 		when(restTemplate.execute(eq(zipFileUrl), eq(HttpMethod.GET), any(), any())).thenReturn(temporaryZipFile.toFile());
 		
 		//Act
-		HiPathSuppressionFilesLocationDto suppressionData = suppressionDataRepository.fetchHiPathSuppressionData(zipFileUrl, unzipLocation);
+		SuppressionFilesLocationDto suppressionData = suppressionDataRepository.fetchHiPathSuppressionData(zipFileUrl, unzipLocation);
 		
 		//Assert
-		Assertions.assertThat(suppressionData.getDataPath()).isEqualTo(unzipLocation.resolve(HIPATH_DATA_SUPPRESSION_FILE_NAME));
+		Assertions.assertThat(suppressionData.getDataPath().getParent()).isEqualTo(unzipLocation);
+		Assertions.assertThat(Character.isDigit(suppressionData.getDataPath().getFileName().toString().charAt(0))).isTrue();
 		Assertions.assertThat(suppressionData.getDomainsPath()).isEqualTo(unzipLocation.resolve(HIPATH_DOMAINS_SUPPRESSION_FILE_NAME));
 		Assertions.assertThat(temporaryZipFile).doesNotExist(); //service deleted it
 		
 		FileUtils.deleteDirectory(unzipLocation.toFile());
 	}
+	
 
 	private Path copyZipTestFileIntoTemporaryLocation(Path unzipLocation, Path testZipFilePath) throws IOException {
 		Path tempZip = unzipLocation.resolve(testZipFilePath.getFileName());
