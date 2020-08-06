@@ -28,11 +28,11 @@ public class HiPathSuppressionService {
 	private SuppressionDataRepository suppressionDataRepository;
 	private FileUtils fileUtils;
 	
-	@Value("${suppression.hipath.unzip-location}")
+//	@Value("${suppression.hipath.unzip-location}")
 	private String hiPathUnzipLocation;
 	
 	public static final String UNZIP_SUBFOLDER_PREFIX = "id-";
-	private final String ZIP_FILE_EXTENTION = "zip";
+	public static final String HIPATH_SUPP_FILE_EXTENTION = "zip";
 	
 	public HiPathSuppressionService(SuppressionDataRepository suppressionDataRepository) {
 		this.suppressionDataRepository = suppressionDataRepository;
@@ -50,38 +50,38 @@ public class HiPathSuppressionService {
 		}
 
 	}
-
-	public boolean  notInSuppressionFile(String mail, Path path) {
-		if(StringUtils.isBlank(mail)) {
-			log.warn("Your data contains a blank email adress !");
-			return true;
-		}
-		
-		try(BufferedReader bufferedReader = Files.newBufferedReader(path)) {
-			String hashedMail = DigestUtils.md5DigestAsHex(mail.getBytes());
-			return bufferedReader.lines()
-					.noneMatch(hashedMail::equals);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e); 
-		}
-
-	}
+//
+//	public boolean  notInSuppressionFile(String mail, Path path) {
+//		if(StringUtils.isBlank(mail)) {
+//			log.warn("Your data contains a blank email adress !");
+//			return true;
+//		}
+//		
+//		try(BufferedReader bufferedReader = Files.newBufferedReader(path)) {
+//			String hashedMail = DigestUtils.md5DigestAsHex(mail.getBytes());
+//			return bufferedReader.lines()
+//					.noneMatch(hashedMail::equals);
+//		} catch (IOException e) {
+//			throw new UncheckedIOException(e); 
+//		}
+//
+//	}
+//	
+//	public SuppressionFilesLocationDto getHiPathSuppressionFilesFromParentDirectory(Path parentDirectory) {
+//		
+//		Path hiPathSuppressionDataFile = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, suppressionDataRepository::isFileHavingHiPathSuppressionDataFileNamePattern);
+//		Path hiPathSuppressionDomainsFile = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, suppressionDataRepository::isFileHavingHiPathSuppressionDomainsFileNamePattern);
+//		
+//		return SuppressionFilesLocationDto.builder()
+//				.dataPath(hiPathSuppressionDataFile)
+//				.domainsPath(hiPathSuppressionDomainsFile).build();
+//	}
 	
-	public SuppressionFilesLocationDto getHiPathSuppressionFilesFromParentDirectory(Path parentDirectory) {
-		
-		Path hiPathSuppressionDataFile = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, suppressionDataRepository::isFileHavingHiPathSuppressionDataFileNamePattern);
-		Path hiPathSuppressionDomainsFile = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, suppressionDataRepository::isFileHavingHiPathSuppressionDomainsFileNamePattern);
-		
-		return SuppressionFilesLocationDto.builder()
-				.dataPath(hiPathSuppressionDataFile)
-				.domainsPath(hiPathSuppressionDomainsFile).build();
-	}
 	
-	
-	public boolean isHiPathSuppressionData(Platform platform, String fileType) {
-		return Platform.HiPath.equals(platform) &&
-				ZIP_FILE_EXTENTION.equals(fileType);
-	}
+//	public Boolean isHiPathSuppressionData(Platform platform, String fileType) {
+//		return Platform.HiPath.equals(platform) &&
+//				HIPATH_SUPP_FILE_EXTENTION.equals(fileType);
+//	}
 
 	
 }

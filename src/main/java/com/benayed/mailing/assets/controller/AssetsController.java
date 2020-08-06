@@ -23,6 +23,7 @@ import com.benayed.mailing.assets.enums.Platform;
 import com.benayed.mailing.assets.repository.DataItemRepository;
 import com.benayed.mailing.assets.repository.SuppressionDataRepository;
 import com.benayed.mailing.assets.service.MailingDataService;
+import com.benayed.mailing.assets.service.SuppressionService;
 
 import lombok.AllArgsConstructor;
 
@@ -32,6 +33,7 @@ import lombok.AllArgsConstructor;
 public class AssetsController {
 	
 	private MailingDataService mailingDataService;
+	private SuppressionService suppressionService;
 
 	
 	@GetMapping(path = "/assets/{id}/groups", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -47,7 +49,7 @@ public class AssetsController {
 	@GetMapping(path = "/test2", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Page<DataItemDto> tsts(@RequestParam(name = "page") int page, @RequestParam(name = "size") int size){
 			try {
-				return mailingDataService.getFilteredPaginatedData(1L, PageRequest.of(page, size), Platform.HiPath, "zip", 1L);
+				return mailingDataService.getFilteredPaginatedData(1L, PageRequest.of(page, size), 1L);
 			} catch (UncheckedIOException | IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -62,17 +64,23 @@ public class AssetsController {
 
 		@GetMapping(path = "/test3", produces = MediaType.APPLICATION_JSON_VALUE)
 		public ResponseEntity<?> tstss(){
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(1L, "http://api.1318amethyst.com/suppdownload.php?z=ODg1MjkxMDA4fDI3MTI5NXwzODg1fDk0OTUwNjAxMA", Platform.HiPath);
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(1L, "http://api.1318amethyst.com/suppdownload.php?z=ODg1MjkxMDA4fDI3MTI5NXwzODg1fDk0OTUwNjAxMA", Platform.HIPATH);
 		
 		return null;
 
 	}
 		
 		
-	@GetMapping(path = "test4")
-	public ResponseEntity<?> tssssst(){
-		mailingDataService.deleteSuppressionInformations(1L);	
-		return null;
-	}
+		@GetMapping(path = "test4")
+		public ResponseEntity<?> tssssst(){
+			mailingDataService.deleteSuppressionInformations(1L);	
+			return null;
+		}
+		
+		@GetMapping(path = "test7")
+		public ResponseEntity<?> tsssssts(){
+			suppressionService.fetchSuppressionData(1L, "https://mailer.optizmo.net/sm-gllf-d21-232b5cf228ae28ab16c629ae83149c09&one=1&icma=cb619841296375b3d5f66639c526c1c7");
+			return null;
+		}
 
 }

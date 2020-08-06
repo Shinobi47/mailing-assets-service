@@ -13,7 +13,8 @@ import com.benayed.mailing.assets.entity.GroupEntity;
 public class DataMapper {
 
 	public DataItemDto toDto(DataItemEntity entity) {
-		return DataItemDto.builder()
+		return entity == null ? null :
+			DataItemDto.builder()
 				.id(entity.getId())
 				.isp(entity.getIsp())
 				.prospectEmail(entity.getProspectEmail())
@@ -21,7 +22,8 @@ public class DataMapper {
 	}
 
 	public GroupDto toDto(GroupEntity entity) {
-		return GroupDto.builder()
+		return entity == null ? null :
+			GroupDto.builder()
 				.id(entity.getId())
 				.name(entity.getName())
 				.creationDate(entity.getCreationDate())
@@ -29,14 +31,16 @@ public class DataMapper {
 	}
 	
 	public AssetDto toDto(AssetEntity entity) {
-		return AssetDto.builder()
+		return entity == null ? null :
+			AssetDto.builder()
 				.id(entity.getId())
 				.name(entity.getName()).build();
 	}
 	
 	
 	public DataItemEntity toEntity(DataItemDto dto) {
-		return DataItemEntity.builder()
+		return dto == null ? null :
+			DataItemEntity.builder()
 				.id(dto.getId())
 				.isp(dto.getIsp())
 				.prospectEmail(dto.getProspectEmail())
@@ -44,7 +48,8 @@ public class DataMapper {
 	}
 
 	public GroupEntity toEntity(GroupDto dto) {
-		return GroupEntity.builder()
+		return dto == null ? null :
+			GroupEntity.builder()
 				.id(dto.getId())
 				.name(dto.getName())
 				.creationDate(dto.getCreationDate())
@@ -52,7 +57,8 @@ public class DataMapper {
 	}
 	
 	public AssetEntity toEntity(AssetDto dto) {
-		return AssetEntity.builder()
+		return dto == null ? null :
+			AssetEntity.builder()
 				.id(dto.getId())
 				.name(dto.getName()).build();
 	}

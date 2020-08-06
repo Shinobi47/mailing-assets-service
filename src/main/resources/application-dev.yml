@@ -18,5 +18,7 @@ spring:
       ddl-auto: none
 
 suppression:
-  hipath:
     unzip-location: src\\main\\resources\\suppression\\HiPath_unzip
+
+optizmo:
+  api-token: token

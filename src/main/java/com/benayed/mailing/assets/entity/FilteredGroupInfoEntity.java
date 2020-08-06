@@ -10,9 +10,10 @@ import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor @NoArgsConstructor @Builder
+@Data @AllArgsConstructor @NoArgsConstructor @Builder
 @Entity
 @Table(name = "SUPPRESSION_FILTERED_GROUP")
 public class FilteredGroupInfoEntity {
