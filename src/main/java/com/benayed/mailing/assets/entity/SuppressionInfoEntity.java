@@ -8,8 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import com.benayed.mailing.assets.enums.Platform;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,8 +29,5 @@ public class SuppressionInfoEntity {
 	
 	@Column(name = "SUPPRESSION_LOCATION")
 	private String suppressionLocation;
-	
-	@Column(name = "SUPPRESSION_PLATFORM")
-	private Platform suppressionPlatform;
 
 }

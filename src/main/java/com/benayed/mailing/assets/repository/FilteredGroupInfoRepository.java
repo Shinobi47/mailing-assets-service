@@ -1,5 +1,7 @@
 package com.benayed.mailing.assets.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +17,7 @@ public interface FilteredGroupInfoRepository extends JpaRepository<FilteredGroup
 	@Modifying
 	@Query(value = "DELETE FROM FilteredGroupInfoEntity sfgi WHERE sfgi.id.suppressionInfoId = :suppressionInfoId")
 	public void deleteAllBySuppressionInfoId(@Param("suppressionInfoId") Long suppressionInfoId);
+
+	public Optional<FilteredGroupInfoEntity> findByGroup_IdAndSuppressionInfo_SuppressionId(Long groupId, Long suppressionId);
+	
 }

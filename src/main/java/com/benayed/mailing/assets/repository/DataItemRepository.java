@@ -11,4 +11,6 @@ import com.benayed.mailing.assets.entity.DataItemEntity;
 public interface DataItemRepository extends JpaRepository<DataItemEntity, Long> {
 
 	public Page<DataItemEntity> findByGroup_id(Long groupId, Pageable pageable);
+	
+	public Integer countByGroup_Id(Long id);
 }

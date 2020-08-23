@@ -1,10 +1,10 @@
 package com.benayed.mailing.assets.controller;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,71 +16,64 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.benayed.mailing.assets.dto.AssetDto;
 import com.benayed.mailing.assets.dto.DataItemDto;
 import com.benayed.mailing.assets.dto.SuppressionInfoDto;
-import com.benayed.mailing.assets.entity.DataItemEntity;
-import com.benayed.mailing.assets.enums.Platform;
-import com.benayed.mailing.assets.repository.DataItemRepository;
-import com.benayed.mailing.assets.repository.SuppressionDataRepository;
+import com.benayed.mailing.assets.exception.TechnicalException;
+import com.benayed.mailing.assets.service.AssetService;
 import com.benayed.mailing.assets.service.MailingDataService;
-import com.benayed.mailing.assets.service.SuppressionService;
 
 import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping(path = "/api/v1")
-public class AssetsController {
+public class AssetsController { 
 	
 	private MailingDataService mailingDataService;
-	private SuppressionService suppressionService;
+	private AssetService assetService; 
 
 	
-	@GetMapping(path = "/assets/{id}/groups", produces = MediaType.APPLICATION_JSON_VALUE)
-	public void getAssets(@PathVariable(name = "id") String assetId, @RequestParam(name = "suppression-data-location") String suppressionDataLocation) {
-//		try {
-//			suppressionDataRepository.fetchHiPathSuppressionData(suppressionDataLocation);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-	}
-	
-	@GetMapping(path = "/test2", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Page<DataItemDto> tsts(@RequestParam(name = "page") int page, @RequestParam(name = "size") int size){
-			try {
-				return mailingDataService.getFilteredPaginatedData(1L, PageRequest.of(page, size), 1L);
-			} catch (UncheckedIOException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-
-	}
-	
-//	@PostMapping(path = "/assets/groups/suppression-infos", produces = MediaType.APPLICATION_JSON_VALUE)
-//	public ResponseEntity<?> tstss(@RequestBody SuppressionInfoDto suppressionInfo){
-//		myService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionInfo.getSuppressionId(), suppressionInfo.getSuppressionLocation(), suppressionInfo.getSuppressionPlatform());
-
-		@GetMapping(path = "/test3", produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<?> tstss(){
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(1L, "http://api.1318amethyst.com/suppdownload.php?z=ODg1MjkxMDA4fDI3MTI5NXwzODg1fDk0OTUwNjAxMA", Platform.HIPATH);
-		
-		return null;
-
-	}
-		
-		
-		@GetMapping(path = "test4")
-		public ResponseEntity<?> tssssst(){
-			mailingDataService.deleteSuppressionInformations(1L);	
-			return null;
+	@GetMapping(path = "/groups/{id}/data", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getData(@PathVariable("id") Long groupId, @RequestParam(name = "page") int page, @RequestParam(name = "size") int size, @RequestParam Boolean filtered, @RequestParam(required = false) Long suppressionId){
+		if(Boolean.TRUE.equals(filtered)) {
+			Page<DataItemDto> filteredPaginatedData = mailingDataService.getFilteredPaginatedData(groupId, PageRequest.of(page, size), suppressionId);
+			return filteredPaginatedData.isEmpty() ? 
+					new ResponseEntity<>(HttpStatus.NOT_FOUND) : 
+						new ResponseEntity<Page<DataItemDto>>(filteredPaginatedData, HttpStatus.OK);
 		}
+
+		throw new TechnicalException("Only filtered data calls are supported ATM");
+	}
+	
+	@PostMapping(path = "/suppression-info", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> postSuppression(@RequestBody SuppressionInfoDto suppressionInfo){
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionInfo.getSuppressionId(), suppressionInfo.getSuppressionLocation());
+		return new ResponseEntity<String>(HttpStatus.CREATED);
+
+	}
 		
-		@GetMapping(path = "test7")
-		public ResponseEntity<?> tsssssts(){
-			suppressionService.fetchSuppressionData(1L, "https://mailer.optizmo.net/sm-gllf-d21-232b5cf228ae28ab16c629ae83149c09&one=1&icma=cb619841296375b3d5f66639c526c1c7");
-			return null;
-		}
+		
+	@DeleteMapping(path = "/suppression-info/{id}")
+	public ResponseEntity<?> deleteSuppression(@PathVariable Long id){
+		mailingDataService.deleteSuppressionInformations(id);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+
+	
+	@GetMapping(path = "/assets/groups")
+	public ResponseEntity<?> getAssetsWithGrps(){
+		List<AssetDto> assetsWithGroups = assetService.fetchAssetsWithGroups();
+		return assetsWithGroups.isEmpty() 
+				? new ResponseEntity<>(HttpStatus.NOT_FOUND) 
+						: new ResponseEntity<>(assetsWithGroups, HttpStatus.OK);
+	}
+	
+	@GetMapping(path = "/filtering/{groupId}-{suppressionId}")
+	public ResponseEntity<?> get(@PathVariable Long groupId, @PathVariable Long suppressionId){
+		System.out.println(groupId + " and " + suppressionId);
+		return new ResponseEntity<>(assetService.fetchFilteringInfos(groupId, suppressionId), HttpStatus.OK);
+	}
 
 }

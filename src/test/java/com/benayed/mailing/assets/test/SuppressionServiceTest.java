@@ -91,7 +91,7 @@ public class SuppressionServiceTest {
 	public void should_perform_right_repository_call_when_optizmo_suppression_detected() throws IOException{
 		//Arrange
 		Long subFolderPrefix = 1L;
-		String suppressionUrl = "https://mailer-api.optizmo.net/accesskey/getfile/sm-gllf-d21-232b5cf228ae28ab16c629ae83149c09?token=1J93HEDffe4vzhoIqdd7qv4MliHx2&dcma=d6110c87b1a9";
+		String suppressionUrl = "https://mailer.optizmo.net/sm-gllf-d21-232b5cf228ae28ab16c629ae83149c09&one=1&icma=cb619841296375b3d5f66639c526c1c7";
 		
 		//Act
 		suppressionService.fetchSuppressionData(subFolderPrefix, suppressionUrl);
@@ -108,7 +108,7 @@ public class SuppressionServiceTest {
 	public void should_uncheck_ioexception_when_raised() throws IOException{
 		//Arrange
 		Long subFolderPrefix = 1L;
-		String suppressionUrl = "https://mailer-api.optizmo.net/accesskey/getfile/sm-gllf-d21-232b5cf228ae28ab16c629ae83149c09?token=1J93HEDffe4vzhoIqdd7qv4MliHx2&dcma=d6110c87b1a9";
+		String suppressionUrl = "https://mailer.optizmo.net/sm-gllf-d21-232b5cf228ae28ab16c629ae83149c09&one=1&icma=cb619841296375b3d5f66639c526c1c7";
 		when(suppressionDataRepository.fetchOptizmoSuppressionData(Mockito.anyString(), Mockito.any())).thenThrow(new IOException());
 
 		//Act

@@ -33,7 +33,6 @@ import com.benayed.mailing.assets.entity.DataItemEntity;
 import com.benayed.mailing.assets.entity.FilteredGroupInfoEntity;
 import com.benayed.mailing.assets.entity.GroupEntity;
 import com.benayed.mailing.assets.entity.SuppressionInfoEntity;
-import com.benayed.mailing.assets.enums.Platform;
 import com.benayed.mailing.assets.exception.TechnicalException;
 import com.benayed.mailing.assets.repository.DataItemRepository;
 import com.benayed.mailing.assets.repository.FilteredGroupInfoRepository;
@@ -133,37 +132,20 @@ public class MailingDataServiceTest {
 		//Arrange
 		Long suppressionId = null;
 		String suppressionUrl = "url";
-		Platform platform = Platform.HIPATH;
 
 		//Act
 		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform));
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl));
 		
 		//Assert
 		//=> Exception thrown
 	}
-	
-	@Test
-	public void should_throw_exception_when_executing_update_with_null_platform() {
-		//Arrange
-		Long suppressionId = 1L;
-		String suppressionUrl = "url";
-		Platform platform = null;
 
-		//Act
-		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform));
-		
-		//Assert
-		//=> Exception thrown
-	}
-	
 	@Test
 	public void should_throw_exception_when_executing_update_with_existing_suppression_data() { //new suppression infos are created while updating
 		//Arrange
 		Long suppressionId = 1L;
 		String suppressionUrl = "url";
-		Platform platform = Platform.HIPATH;
 
 		Optional<SuppressionInfoEntity> existingSuppressionInfo = Optional.<SuppressionInfoEntity>of(SuppressionInfoEntity.builder().build());
 		
@@ -171,7 +153,7 @@ public class MailingDataServiceTest {
 
 		//Act
 		assertThrows(TechnicalException.class, () -> 
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform));
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl));
 		
 		//Assert
 		//=> Exception thrown
@@ -183,7 +165,6 @@ public class MailingDataServiceTest {
 		//Arrange
 		Long suppressionId = 1L;
 		String suppressionUrl = "url";
-		Platform platform = Platform.HIPATH;
 		SuppressionFilesLocationDto nullarg = null;
 		
 		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.empty());
@@ -191,7 +172,7 @@ public class MailingDataServiceTest {
 
 		//Act
 		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform));
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl));
 		
 		//Assert
 		//=> Exception thrown
@@ -203,7 +184,6 @@ public class MailingDataServiceTest {
 		//Arrange
 		Long suppressionId = 1L;
 		String suppressionUrl = "url";
-		Platform platform = Platform.HIPATH;
 		SuppressionFilesLocationDto sflWithNullDataPath = SuppressionFilesLocationDto.builder().dataPath(null).build();
 		
 		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.empty());
@@ -211,7 +191,7 @@ public class MailingDataServiceTest {
 
 		//Act
 		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform));
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl));
 		
 		//Assert
 		//=> Exception thrown
@@ -223,7 +203,6 @@ public class MailingDataServiceTest {
 		//Arrange
 		Long suppressionId = 1L;
 		String suppressionUrl = "url";
-		Platform platform = Platform.HIPATH;
 		SuppressionFilesLocationDto sflWithNullDataPath = SuppressionFilesLocationDto.builder().dataPath(Paths.get("pathWithNoParent")).build();
 		
 		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.empty());
@@ -231,7 +210,7 @@ public class MailingDataServiceTest {
 
 		//Act
 		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform));
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl));
 		
 		//Assert
 		//=> Exception thrown
@@ -246,7 +225,6 @@ public class MailingDataServiceTest {
 		//Arrange
 		Long suppressionId = 1L;
 		String suppressionUrl = "url";
-		Platform platform = Platform.HIPATH;
 		Path parentSuppLocation = Paths.get("dummy");
 		SuppressionFilesLocationDto validDataSuppLocation = SuppressionFilesLocationDto.builder().dataPath(parentSuppLocation.resolve("0.txt")).build();
 		
@@ -257,14 +235,13 @@ public class MailingDataServiceTest {
 
 		//Act
 
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform);
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl);
 		
 		//Assert
 		verify(suppressionInfoRepository, times(1)).save(suppInfoEntityCaptor.capture());
 		SuppressionInfoEntity savedSuppInfoEntity = suppInfoEntityCaptor.getValue();
 		Assertions.assertThat(savedSuppInfoEntity.getSuppressionId()).isEqualTo(suppressionId);
 		Assertions.assertThat(savedSuppInfoEntity.getSuppressionLocation()).isEqualTo(parentSuppLocation.toString());
-		Assertions.assertThat(savedSuppInfoEntity.getSuppressionPlatform()).isEqualTo(platform);
 
 	}
 	
@@ -274,7 +251,6 @@ public class MailingDataServiceTest {
 		//Arrange
 		Long suppressionId = 1L;
 		String suppressionUrl = "url";
-		Platform platform = Platform.HIPATH;
 		Path suppressionDataPath = Paths.get("parent", "dummy");
 		
 		DataItemEntity itemToRemain = DataItemEntity.builder().prospectEmail("mail1").build();
@@ -290,7 +266,7 @@ public class MailingDataServiceTest {
 		when(suppressionService.notInSuppressionFile(itemToRemain.getProspectEmail(), suppressionDataPath)).thenReturn(true);
 		
 		//Act
-		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl, platform);
+		mailingDataService.updateAllGroupsFilteringCountWithNewSuppressionData(suppressionId, suppressionUrl);
 		
 		//Assert
 		verify(suppressionService, times(1)).notInSuppressionFile(itemToRemain.getProspectEmail(), suppressionDataPath);

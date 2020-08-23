@@ -46,7 +46,7 @@ public class SuppressionService {
 			Platform platform = getUsedPlatform(suppressionUrl);
 			String subfolder = UNZIP_SUBFOLDER_PREFIX + String.valueOf(subFolderPrefix) + "_" + platform + "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy_hh-mm-ss_SSS-a"));
 			Path unzipLocation = Paths.get(parentUnzipLocation, subfolder);
-			System.out.println(unzipLocation);
+
 			Files.createDirectories(unzipLocation);
 			
 			if(HIPATH.equals(platform)) {

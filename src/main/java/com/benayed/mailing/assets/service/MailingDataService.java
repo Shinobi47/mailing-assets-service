@@ -25,7 +25,6 @@ import com.benayed.mailing.assets.entity.FilteredGroupInfoEntity;
 import com.benayed.mailing.assets.entity.FilteredGroupInfoKey;
 import com.benayed.mailing.assets.entity.GroupEntity;
 import com.benayed.mailing.assets.entity.SuppressionInfoEntity;
-import com.benayed.mailing.assets.enums.Platform;
 import com.benayed.mailing.assets.exception.TechnicalException;
 import com.benayed.mailing.assets.repository.DataItemRepository;
 import com.benayed.mailing.assets.repository.FilteredGroupInfoRepository;
@@ -48,6 +47,7 @@ public class MailingDataService {
 	private FilteredGroupInfoRepository filteredGroupInfoRepository;
 	private GroupRepository groupRepository;
 	private SuppressionService suppressionService;
+
 	
 	@Transactional
 	public void deleteSuppressionInformations(Long suppressionId) {
@@ -63,15 +63,13 @@ public class MailingDataService {
 		}catch(IOException e) {
 			throw new UncheckedIOException(e);
 		}
-
+		
 	}
 
-
 	@Transactional
-	public void updateAllGroupsFilteringCountWithNewSuppressionData(Long suppressionId, String suppressionUrl, Platform platform) {
+	public void updateAllGroupsFilteringCountWithNewSuppressionData(Long suppressionId, String suppressionUrl) {
 		
 		Assert.notNull(suppressionId, "Cannot update groups with suppression infos with null suppressionId");
-		Assert.notNull(platform, "Cannot update groups with suppression infos with null suppressionId");
 
 		if(suppressionInfoRepository.findBySuppressionId(suppressionId).isPresent()){
 			throw new TechnicalException("A suppressionInfo already exists with the given suppressionId : " + suppressionId + " Cannot update mailing data with existing suppression !");
@@ -79,7 +77,7 @@ public class MailingDataService {
 		
 		SuppressionFilesLocationDto suppressionFiles = suppressionService.fetchSuppressionData(suppressionId, suppressionUrl);
 		 
-		SuppressionInfoEntity savedSuppressionInfo = persistSuppressionDataInfos(suppressionId, getDataSuppressionParentLocation(suppressionFiles), platform);
+		SuppressionInfoEntity savedSuppressionInfo = persistSuppressionDataInfos(suppressionId, getDataSuppressionParentLocation(suppressionFiles));
 		
 		groupRepository.findAll().stream()
 		.map(group -> filterGroupDataWithSuppression(suppressionFiles, group))
@@ -87,7 +85,7 @@ public class MailingDataService {
 
 	}
 	
-	public Page<DataItemDto> getFilteredPaginatedData(Long groupId, Pageable pageable, Long suppressionId) throws IOException {
+	public Page<DataItemDto> getFilteredPaginatedData(Long groupId, Pageable pageable, Long suppressionId){
 		
 		log.info("Fetching Filtered Paginated Data ...");
 	
@@ -96,11 +94,9 @@ public class MailingDataService {
 		return fetchDataFilteredWithSuppressionData(suppressionFiles.getDataPath(), groupId, pageable);
 	}
 
-	private SuppressionInfoEntity persistSuppressionDataInfos(Long suppressionId, String suppressionLocation,
-			Platform platform) {
+	private SuppressionInfoEntity persistSuppressionDataInfos(Long suppressionId, String suppressionLocation) {
 		SuppressionInfoEntity suppressionInfo = SuppressionInfoEntity.builder()
 				.suppressionId(suppressionId)
-				.suppressionPlatform(platform)
 				.suppressionLocation(suppressionLocation).build();
 		SuppressionInfoEntity savedSuppressionInfo = suppressionInfoRepository.save(suppressionInfo);
 		return savedSuppressionInfo;

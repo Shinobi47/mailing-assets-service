@@ -1,5 +1,8 @@
 package com.benayed.mailing.assets.utils;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import com.benayed.mailing.assets.dto.AssetDto;
@@ -26,8 +29,15 @@ public class DataMapper {
 			GroupDto.builder()
 				.id(entity.getId())
 				.name(entity.getName())
-				.creationDate(entity.getCreationDate())
-				.asset(toDto(entity.getAsset())).build();
+				.creationDate(entity.getCreationDate()).build();
+	}
+	
+	public GroupDto toDto(GroupEntity entity, boolean shouldMapAssets) {
+		GroupDto dto = toDto(entity);
+		if(shouldMapAssets) {
+			dto.setAsset(toDto(entity.getAsset()));
+		}
+		return dto;
 	}
 	
 	public AssetDto toDto(AssetEntity entity) {
@@ -35,6 +45,16 @@ public class DataMapper {
 			AssetDto.builder()
 				.id(entity.getId())
 				.name(entity.getName()).build();
+	}
+	
+	public AssetDto toDto(AssetEntity entity, boolean shouldMapGroups) {
+		AssetDto dto = toDto(entity);
+		if(shouldMapGroups) {
+			List<GroupDto> groups = entity.getGroups() == null ? null :
+				entity.getGroups().stream().map(this::toDto).collect(Collectors.toList());
+			dto.setGroup(groups);
+		}
+		return dto;
 	}
 	
 	
