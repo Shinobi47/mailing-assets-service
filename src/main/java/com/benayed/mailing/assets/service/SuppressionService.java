@@ -71,8 +71,8 @@ public class SuppressionService {
 	}
 
 	public SuppressionFilesLocationDto getSuppressionFilesFromDirectory(Path parentDirectory) {
-		Path suppressionDataPath = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, fileUtils::doesFileNameContainDomains);
-		Path suppressionDomainsPath = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, fileUtils::doesFileNameNotContainDomains);
+		Path suppressionDataPath = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, fileUtils::doesFileNameNotContainDomains);
+		Path suppressionDomainsPath = fileUtils.getFileRespectingAPredicateFromDirectory(parentDirectory, fileUtils::doesFileNameContainDomains);
 		
 		return SuppressionFilesLocationDto.builder()
 				.dataPath(suppressionDataPath)
@@ -85,7 +85,6 @@ public class SuppressionService {
 			log.warn("Your data contains a blank email adress !");
 			return true;
 		}
-		
 		try(BufferedReader bufferedReader = Files.newBufferedReader(path)) {
 			String hashedMail = DigestUtils.md5DigestAsHex(mail.getBytes());
 			return bufferedReader.lines()

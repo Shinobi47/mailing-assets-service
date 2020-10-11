@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -22,10 +23,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import com.benayed.mailing.assets.dto.DataItemDto;
 import com.benayed.mailing.assets.dto.SuppressionFilesLocationDto;
@@ -284,13 +281,12 @@ public class MailingDataServiceTest {
 	@Test
 	public void should_throw_exception_when_fetching_data_with_null_suppressionId() throws IOException {
 		//Arrange
-		Long groupId = 7L;
-		Pageable pageable = PageRequest.of(1, 1);
+		List<Long> groupsIds = Arrays.asList(7L);
 		Long suppressionId = null;
 
 		//Act
 		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.getFilteredPaginatedData(groupId, pageable, suppressionId));
+		mailingDataService.getFilteredData(groupsIds, suppressionId, null, null));
 		
 		//Assert
 		//=> exception thrown
@@ -299,8 +295,7 @@ public class MailingDataServiceTest {
 	@Test
 	public void should_throw_exception_when_no_suppressionInfo_found_for_the_given_suppressionId_when_fetching_filteredPaginatedData() throws IOException {
 		//Arrange
-		Long groupId = 7L;
-		Pageable pageable = PageRequest.of(1, 1);
+		List<Long> groupsIds = Arrays.asList(7L);
 		Long suppressionId = 70L;
 		
 		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.empty());
@@ -308,7 +303,7 @@ public class MailingDataServiceTest {
 
 		//Act
 		assertThrows(NoSuchElementException.class, () -> 
-		mailingDataService.getFilteredPaginatedData(groupId, pageable, suppressionId));
+		mailingDataService.getFilteredData(groupsIds, suppressionId, null, null));
 		
 		//Assert
 		//=> exception thrown
@@ -317,25 +312,23 @@ public class MailingDataServiceTest {
 	@Test
 	public void should_throw_exception_when_fetching_data_but_suppressionInfo_has_null_suppressionLocation() throws IOException {
 		//Arrange
-		Long groupId = 7L;
-		Pageable pageable = PageRequest.of(1, 1);
-		Long suppressionId = 70L;
+		List<Long> groupsIds 
+		= Arrays.asList(7L);		Long suppressionId = 70L;
 		
 		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.<SuppressionInfoEntity>ofNullable(SuppressionInfoEntity.builder().build()));
 
 		//Act
 		assertThrows(NoSuchElementException.class, () -> 
-		mailingDataService.getFilteredPaginatedData(groupId, pageable, suppressionId));
+		mailingDataService.getFilteredData(groupsIds, suppressionId, null, null));
 		
 		//Assert
 		//=> exception thrown
 	}
 	
 	@Test
-	public void should_throw_exception_when_fetching_data_with_null_groupId() throws IOException {
+	public void should_throw_exception_when_fetching_data_with_null_groupsIds() throws IOException {
 		//Arrange
-		Long groupId = null;
-		Pageable pageable = PageRequest.of(1, 1);
+		List<Long> groupsIds = null;
 		Long suppressionId = 70L;
 		
 		when(suppressionService.getSuppressionFilesFromDirectory(Mockito.any())).thenReturn(SuppressionFilesLocationDto.builder().build());
@@ -343,35 +336,33 @@ public class MailingDataServiceTest {
 		
 		//Act
 		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.getFilteredPaginatedData(groupId, pageable, suppressionId));
+		mailingDataService.getFilteredData(groupsIds, suppressionId, null, null));
 		
 		//Assert
 		//=> exception thrown
 	}
-	
-	@Test
-	public void should_throw_exception_when_fetching_data_with_null_pageable() throws IOException {
-		//Arrange
-		Long groupId = 7L;
-		Pageable pageable = null;
-		Long suppressionId = 70L;
-		
-		when(suppressionService.getSuppressionFilesFromDirectory(Mockito.any())).thenReturn(SuppressionFilesLocationDto.builder().build());
-		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.<SuppressionInfoEntity>ofNullable(SuppressionInfoEntity.builder().suppressionLocation("dummySL").build()));
 
+	@Test
+	public void should_throw_exception_when_fetching_data_with_empty_groupsIds() throws IOException {
+		//Arrange
+		List<Long> groupsIds = new ArrayList<>();
+		Long suppressionId = 70L;
+		
+		when(suppressionService.getSuppressionFilesFromDirectory(Mockito.any())).thenReturn(SuppressionFilesLocationDto.builder().build());
+		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.<SuppressionInfoEntity>ofNullable(SuppressionInfoEntity.builder().suppressionLocation("dummySL").build()));
+		
 		//Act
 		assertThrows(IllegalArgumentException.class, () -> 
-		mailingDataService.getFilteredPaginatedData(groupId, pageable, suppressionId));
+		mailingDataService.getFilteredData(groupsIds, suppressionId, null, null));
 		
 		//Assert
 		//=> exception thrown
 	}
 	
 	@Test
-	public void should_fetch_data_page_then_fetch_suppression_data_then_filter_fetched_data_thenfinally_return_new_page_with_expected_params() throws IOException {
+	public void should_fetch_data_then_fetch_suppression_data_then_return_filtered_data() throws IOException {
 		//Arrange
-		Long groupId = 7L;
-		Pageable pageable = PageRequest.of(1, 1);
+		List<Long> groupsIds = Arrays.asList(7L);
 		Long suppressionId = 70L;
 
 		SuppressionInfoEntity ExistingSuppressionData = SuppressionInfoEntity.builder().suppressionLocation("suppression_parent_folder").build();
@@ -384,16 +375,14 @@ public class MailingDataServiceTest {
 		when(suppressionInfoRepository.findBySuppressionId(suppressionId)).thenReturn(Optional.<SuppressionInfoEntity>ofNullable(ExistingSuppressionData));
 		when(suppressionService.getSuppressionFilesFromDirectory(Paths.get(ExistingSuppressionData.getSuppressionLocation()))).thenReturn(suppDataSupposedLocation);
 		
-		when(dataItemRepository.findByGroup_id(groupId, pageable)).thenReturn(new PageImpl<DataItemEntity>(dataToBeFiltered));
+		when(dataItemRepository.findByGroup_idOrderByItemId(groupsIds, null, null)).thenReturn(new ArrayList<DataItemEntity>(dataToBeFiltered));
 		when(suppressionService.notInSuppressionFile(itemToRemain.getProspectEmail(), suppDataSupposedLocation.getDataPath())).thenReturn(true);
 
 		//Act
-		Page<DataItemDto> filteredPaginatedData = mailingDataService.getFilteredPaginatedData(groupId, pageable, suppressionId);
+		List<DataItemDto> filteredData = mailingDataService.getFilteredData(groupsIds, suppressionId, null, null);
 		
 		//Assert
-		Assertions.assertThat(filteredPaginatedData).hasSize(1); //one item has been filtered and one remains
-		Assertions.assertThat(filteredPaginatedData.getTotalElements()).isEqualTo(dataToBeFiltered.size()); // repagination keeps previous params (ie db repository params)
-		Assertions.assertThat(filteredPaginatedData.getPageable()).isEqualTo(pageable);
+		Assertions.assertThat(filteredData).hasSize(1); //one item has been filtered and one remains
 	}
 	
 	

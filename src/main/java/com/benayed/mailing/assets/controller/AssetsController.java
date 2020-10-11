@@ -1,9 +1,9 @@
 package com.benayed.mailing.assets.controller;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +33,15 @@ public class AssetsController {
 	private MailingDataService mailingDataService;
 	private AssetService assetService; 
 
-	
-	@GetMapping(path = "/groups/{id}/data", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getData(@PathVariable("id") Long groupId, @RequestParam(name = "page") int page, @RequestParam(name = "size") int size, @RequestParam Boolean filtered, @RequestParam(required = false) Long suppressionId){
+	@GetMapping(path = "/groups/{ids}/data", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getData(@PathVariable("ids") String stringGroupsIds, @RequestParam Boolean filtered, @RequestParam(name = "suppression-id") Long suppressionId, @RequestParam(required = false) Integer offset, @RequestParam(required = false) Integer limit){
+		List<Long> groupsIds = Arrays.asList(stringGroupsIds.split(",")).stream().map(Long::parseLong).collect(Collectors.toList());
 		if(Boolean.TRUE.equals(filtered)) {
-			Page<DataItemDto> filteredPaginatedData = mailingDataService.getFilteredPaginatedData(groupId, PageRequest.of(page, size), suppressionId);
-			return filteredPaginatedData.isEmpty() ? 
+			List<DataItemDto> filteredData = mailingDataService.getFilteredData(groupsIds, suppressionId, offset, limit);
+
+			return filteredData.isEmpty() ? 
 					new ResponseEntity<>(HttpStatus.NOT_FOUND) : 
-						new ResponseEntity<Page<DataItemDto>>(filteredPaginatedData, HttpStatus.OK);
+						new ResponseEntity<List<DataItemDto>>(filteredData, HttpStatus.OK);
 		}
 
 		throw new TechnicalException("Only filtered data calls are supported ATM");

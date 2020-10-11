@@ -7,16 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import com.benayed.mailing.assets.dto.DataItemDto;
 import com.benayed.mailing.assets.dto.SuppressionFilesLocationDto;
@@ -85,13 +82,13 @@ public class MailingDataService {
 
 	}
 	
-	public Page<DataItemDto> getFilteredPaginatedData(Long groupId, Pageable pageable, Long suppressionId){
+	public List<DataItemDto> getFilteredData(List<Long> groupsIds, Long suppressionId, Integer offset, Integer limit){
 		
-		log.info("Fetching Filtered Paginated Data ...");
+		log.info("Fetching Filtered Data ...");
 	
 		SuppressionFilesLocationDto suppressionFiles = fetchSuppressionDataLocation(suppressionId);
 			
-		return fetchDataFilteredWithSuppressionData(suppressionFiles.getDataPath(), groupId, pageable);
+		return fetchDataFilteredWithSuppressionData(suppressionFiles.getDataPath(), groupsIds, offset, limit);
 	}
 
 	private SuppressionInfoEntity persistSuppressionDataInfos(Long suppressionId, String suppressionLocation) {
@@ -131,28 +128,24 @@ public class MailingDataService {
 	private SuppressionFilesLocationDto fetchSuppressionDataLocation(Long suppressionId) {
 		Assert.notNull(suppressionId, "specific suppressionInfo is needed to filter the data, cannot fetch suppressionInfo with null suppressionId");
 		
-		Optional<SuppressionInfoEntity> findBySuppressionId = suppressionInfoRepository.findBySuppressionId(suppressionId);
-		String suppressionParentFileLocation = findBySuppressionId
-			.map(SuppressionInfoEntity::getSuppressionLocation)
-			.orElseThrow(() -> new NoSuchElementException("No suppressionInfo available with the given suppression id :" + suppressionId));
+		String suppressionParentFileLocation = suppressionInfoRepository.findBySuppressionId(suppressionId)
+				.map(SuppressionInfoEntity::getSuppressionLocation)
+				.orElseThrow(() -> new NoSuchElementException("No suppressionInfo available with the given suppression id :" + suppressionId));
 		
 		return suppressionService.getSuppressionFilesFromDirectory(Paths.get(suppressionParentFileLocation));
 	}
 	
 
-	private Page<DataItemDto> fetchDataFilteredWithSuppressionData(Path suppressionDataPath, Long groupId, Pageable pageable) {
-		Assert.notNull(groupId, "Cannot fetch data with null group id !");
-		Assert.notNull(pageable, "Cannot fetch data with null pageable !");
+	private List<DataItemDto> fetchDataFilteredWithSuppressionData(Path suppressionDataPath, List<Long> groupsIds, Integer offset, Integer limit) {
+		Assert.isTrue(!CollectionUtils.isEmpty(groupsIds), "Cannot fetch data with null or empty group id !");
 		
 		log.info("Fetching Data page from DB ...");
-		Page<DataItemDto> mailingData = dataItemRepository.findByGroup_id(groupId, pageable).map(dataMapper::toDto);
 		
-		List<DataItemDto> filteredMailingData = mailingData.getContent()
-				.stream()
+		return dataItemRepository.findByGroup_idOrderByItemId(groupsIds, offset, limit).stream()
+				.map(dataMapper::toDto)
 				.filter(dataItem -> suppressionService.notInSuppressionFile(dataItem.getProspectEmail(), suppressionDataPath))
 				.collect(Collectors.toList());
 		
-		return new PageImpl<DataItemDto>(filteredMailingData, pageable, mailingData.getTotalElements());
 	}
 	
 	private String getDataSuppressionParentLocation(SuppressionFilesLocationDto suppressionFiles) {
