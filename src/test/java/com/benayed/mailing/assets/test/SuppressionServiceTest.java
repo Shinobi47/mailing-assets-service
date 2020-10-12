@@ -1,5 +1,6 @@
 package com.benayed.mailing.assets.test;
 
+import static org.apache.commons.io.FileUtils.deleteDirectory;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -19,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,7 +29,6 @@ import com.benayed.mailing.assets.exception.TechnicalException;
 import com.benayed.mailing.assets.repository.SuppressionDataRepository;
 import com.benayed.mailing.assets.service.SuppressionService;
 import com.benayed.mailing.assets.utils.FileUtils;
-import static org.apache.commons.io.FileUtils.deleteDirectory;
 
 @ExtendWith(MockitoExtension.class)
 public class SuppressionServiceTest {
@@ -39,9 +37,6 @@ public class SuppressionServiceTest {
 	private SuppressionDataRepository suppressionDataRepository;
 
 	FileUtils fileUtils = new FileUtils();
-	
-	@Captor
-	private ArgumentCaptor<Path> captor;
 	
 	private SuppressionService suppressionService;
 	
