@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.context.annotation.Primary;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -30,4 +32,14 @@ public class AppConfig {
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		return objectMapper;
     }
+	
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**").allowedOrigins("*");
+			}
+		};
+	}
 }
