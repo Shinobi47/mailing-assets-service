@@ -73,7 +73,6 @@ public class AssetsController {
 	
 	@GetMapping(path = "/filtering/{groupId}-{suppressionId}")
 	public ResponseEntity<?> get(@PathVariable Long groupId, @PathVariable Long suppressionId){
-		System.out.println(groupId + " and " + suppressionId);
 		return new ResponseEntity<>(assetService.fetchFilteringInfos(groupId, suppressionId), HttpStatus.OK);
 	}
 
